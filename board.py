@@ -1,88 +1,184 @@
-import pygame, numpy as np
-from constants import *
-from events import *
+import pygame, random, numpy as np
+from constant import *
 from rectangle import *
-BLACK = pygame.Color(0,0,0)
-
-class Cell(Rectangle):
-    def __init__(self, surface, position, id):
-        super().__init__(surface, position, CELL_SIZE, CELL_SIZE, CELL_LINE_COLOR)
-        self.id = id
-        self.offset = CELL_SIZE // 3
-        self.value = 0
-
-    def draw_object(self, direction = 'none'):
-        pygame.draw.rect(self.surface, GREEN, pygame.Rect(self.position[0] + self.offset, self.position[1] + self.offset, self.offset, self.offset))
-        if direction == 'r':
-            pygame.draw.rect(self.surface, GREEN, pygame.Rect(self.position[0] + 2 * self.offset, self.position[1] + self.offset, self.offset, self.offset))
-        if direction == 'd':
-            pygame.draw.rect(self.surface, GREEN, pygame.Rect(self.position[0] + self.offset, self.position[1] + 2 * self.offset, self.offset, self.offset))
-        if direction == 'l':
-            pygame.draw.rect(self.surface, GREEN, pygame.Rect(self.position[0], self.position[1] + self.offset, self.offset, self.offset))
-        if direction == 'u':
-            pygame.draw.rect(self.surface, GREEN, pygame.Rect(self.position[0] + self.offset, self.position[1], self.offset, self.offset))
-
-    def get_neighbors(self, rows, columns):
-        neighbors = []
-        if self.id[0] + 1 < columns: #right
-            neighbors.append([self.id[0] + 1, self.id[1]])
-        if self.id[1] + 1 < rows: #down
-            neighbors.append([self.id[0], self.id[1] + 1])
-        if self.id[0] - 1 > -1: #left
-            neighbors.append([self.id[0] - 1, self.id[1]])
-        if self.id[1] - 1 > -1: #up
-            neighbors.append([self.id[0], self.id[1] - 1])
-        return neighbors
+from snake import *
 
 class Board(Rectangle):
-    def __init__(self, surface):
-        super().__init__(surface, [BOARD_OFFSET // 2, BOARD_OFFSET // 2], BOARD_WIDTH - BOARD_OFFSET, BOARD_HEIGHT - BOARD_OFFSET, BORDER_COLOR, BOARD_COLOR)
-        self.cells = []
-        self.values = np.zeros((ROWS, COLUMNS), dtype='uint8')
+    def __init__(self, surface : pygame.Surface):
+        super().__init__(surface, (BOARD_OFFSET, BOARD_OFFSET), BOARD_WIDTH, BOARD_HEIGHT, fill_color = BOARD_COLOR)
+        self.cells : dict[tuple[int, int], Cell] = {}
+        self.init_values = np.zeros((ROWS, COLUMNS), dtype = 'uint8')
         for i in range(COLUMNS):
-            column_cells = []
             for j in range(ROWS):
-                cell = Cell(self.surface, [self.position[0] + CELL_SIZE * i, self.position[1] + CELL_SIZE * j], [i, j])
-                column_cells.append(cell)
-            self.cells.append(column_cells)
+                self.cells[i, j] = Cell(self.surface, [self.position[0] + CELL_SIZE * i, self.position[1] + CELL_SIZE * j], [i, j])
+        self.food_id = INIT_FOOD_ID
+        self.noises : list[tuple[int, int]] = INIT_NOISES
+        self.is_two_player = True
+        
+        self.snake1_id = INIT_SNAKE1_ID
+        self.snake1 = Snake(self.surface, INIT_SNAKE1_ID)
+        self.cells[self.snake1_id].value = self.init_values[self.snake1_id[1]][self.snake1_id[0]] = OBJECT_DICT['snake1']
+        
+        self.snake2_id = INIT_SNAKE2_ID
+        self.snake2 = Snake(self.surface, INIT_SNAKE2_ID, is_player_2 = True)
+        self.cells[self.snake2_id].value = self.init_values[self.snake2_id[1]][self.snake2_id[0]] = OBJECT_DICT['snake2']
+
+        self.cells[self.food_id].value = self.init_values[self.food_id[1]][self.food_id[0]] = OBJECT_DICT['food']
+        self.is_edit_mode = False
 
     def draw(self):
         self.board = pygame.draw.rect(self.surface, BOARD_COLOR, pygame.Rect(self.position[0], self.position[1], self.width, self.height))
-        for column_cells in self.cells:
-            for cell in column_cells:
-                cell.draw_border()
-                if not (cell.value == 0):
-                    cell.draw_object()
-                    neighbors = cell.get_neighbors(ROWS, COLUMNS)
-                    self.connect_neighbors(cell.id, neighbors)
+        if not self.is_two_player:
+            if self.snake1.algorithm.is_found:
+                self.draw_path()
+        self.snake1.draw()
+        if self.is_two_player:
+            self.snake2.draw()
+        for cell_id in self.cells:
+            self.cells[cell_id].draw_border()
+            self.cells[cell_id].draw_object()
         self.draw_border()
-        # print(self.values)
 
-    def is_clicked(self, event, mouse, value = 1):
-        if is_clicked(self, event, mouse):
-            cell_id = [(mouse[0] - self.position[0]) // CELL_SIZE, (mouse[1] - self.position[1]) // CELL_SIZE]
-            if self.cells[cell_id[0]][cell_id[1]].value == 1:
-                self.cells[cell_id[0]][cell_id[1]].value = 0
-                self.values[cell_id[0]][cell_id[1]] = 0
-            else:
-                self.cells[cell_id[0]][cell_id[1]].value = 1
-                self.values[cell_id[0]][cell_id[1]] = 1
-            return 1
-        return 0
+    def draw_path(self):
+        frontier_id : list[tuple[int, int]] = []
+        for frontier_node in self.snake1.algorithm.frontier:
+            frontier_id.append(frontier_node.id)
+        visited_id : list[tuple[int, int]] = []
+        for visited_key in self.snake1.algorithm.visited:
+            visited_id.append(visited_key)
+        path_id : list[tuple[int, int]] = []
+        for part_id in self.snake1.algorithm.snake_parts_id:
+            path_id.append(part_id)
+        for position in self.snake1.algorithm.path:
+            id = ((position[0][0] - BOARD_OFFSET) // CELL_SIZE, (position[0][1] - BOARD_OFFSET) // CELL_SIZE)
+            path_id.append(id)
+        path_id.append(self.food_id)
+        for id in frontier_id:
+            self.cells[id].draw_path(OBJECT_DICT['frontier'])
+        for id in visited_id:
+            self.cells[id].draw_path(OBJECT_DICT['visited'])
+        for id in path_id:
+            self.cells[id].draw_path(OBJECT_DICT['path'])
 
-    def connect_neighbors(self, cell_id, neighbors):
-        for position in neighbors:
-            if not (self.cells[cell_id[0]][cell_id[1]].value == self.cells[position[0]][position[1]].value):
-                continue
-            if position[0] > cell_id[0]: #right
-                self.cells[cell_id[0]][cell_id[1]].draw_object('r')
-                self.cells[position[0]][position[1]].draw_object('l')
-            if position[1] > cell_id[1]: #down
-                self.cells[cell_id[0]][cell_id[1]].draw_object('d')
-                self.cells[position[0]][position[1]].draw_object('u')
-            if position[0] < cell_id[0]: #left
-                self.cells[cell_id[0]][cell_id[1]].draw_object('l')
-                self.cells[position[0]][position[1]].draw_object('r')
-            if position[1] < cell_id[1]: #up
-                self.cells[cell_id[0]][cell_id[1]].draw_object('u')
-                self.cells[position[0]][position[1]].draw_object('d')
+    def text_to_value(self, text):
+        for i in range(len(OBJECT_NAMES)):
+            if OBJECT_NAMES[i] != text:
+                 continue
+            if i == 1:
+                return OBJECT_DICT['empty']
+            elif i == 2:
+                return OBJECT_DICT['snake1']
+            elif i == 3:
+                return OBJECT_DICT['snake2']
+            elif i == 4:
+                return OBJECT_DICT['food']
+            elif i == 5:
+                return OBJECT_DICT['noise']
+
+    def is_clicked(self, event : pygame.event.Event, mouse : tuple[int, int], text : str):
+        if super().is_clicked(event, mouse):
+            value = self.text_to_value(text)
+            cell_id = ((mouse[0] - self.position[0]) // CELL_SIZE, (mouse[1] - self.position[1]) // CELL_SIZE)
+            if self.cells[cell_id].value == value:
+                return 'Valid'
+            
+            if not self.is_id_valid(cell_id, value):
+                return 'Invalid'
+            
+            if value == OBJECT_DICT['empty']:
+                self.noises.remove(cell_id)
+                self.snake1.noises.remove(cell_id)
+            
+            elif value == OBJECT_DICT['snake1']:
+                self.cells[self.snake1_id].value = OBJECT_DICT['empty']
+                self.snake1_id = cell_id
+                self.snake1 = Snake(self.surface, self.snake1_id, self.food_id)
+            
+            elif value == OBJECT_DICT['snake2']:
+                self.cells[self.snake2_id].value = OBJECT_DICT['empty']
+                self.snake2_id = cell_id
+                self.snake2 = Snake(self.surface, self.snake2_id, self.food_id, is_player_2 = True)
+            
+            elif value == OBJECT_DICT['food']:
+                self.cells[self.food_id].value = OBJECT_DICT['empty']
+                self.food_id = self.snake1.food_id = self.snake2.food_id = cell_id
+            
+            elif value == OBJECT_DICT['noise']:
+                self.noises.append(cell_id)
+                self.snake1.noises.append(cell_id)
+
+            self.cells[cell_id].value = value
+            return 'Valid'
+        return 'Waiting'
+
+    def is_id_valid(self, id, value):
+        if value == OBJECT_DICT['snake1'] or value == OBJECT_DICT['snake2']:
+            new_snake = Snake(self.surface, id)
+            snake_parts_id = new_snake.get_parts_id()
+            for part_id in snake_parts_id:
+                if self.cells[part_id].value != value and self.cells[part_id].value != OBJECT_DICT['empty']:
+                    return False
+            return True
+        else:
+            snake_parts_id = self.snake1.get_parts_id()
+            for part_id in snake_parts_id:
+                if id == part_id:
+                    return False
+            if value == OBJECT_DICT['empty']:
+                return False if self.cells[id].value == OBJECT_DICT['food'] else True
+            if self.cells[id].value != OBJECT_DICT['empty']:
+                return False
+            return True
+
+    def respawn_food(self):
+        old_food_id = self.food_id
+        while self.is_id_valid(self.food_id, OBJECT_DICT['food']) == False:
+            self.food_id = (random.randrange(0, COLUMNS), random.randrange(0, ROWS))
+        self.cells[old_food_id].value = OBJECT_DICT['empty']
+        self.cells[self.food_id].value = OBJECT_DICT['food']
+        self.snake1.food_id = self.food_id
+        self.snake2.food_id = self.food_id
+                
+    def reset(self):
+        self.noises.clear()
+        for i in range(COLUMNS):
+            for j in range(ROWS):
+                self.cells[i, j].value = self.init_values[j][i]
+                if self.cells[i, j].value == OBJECT_DICT['snake1']:
+                    self.snake1_id = (i, j)
+                if self.cells[i, j].value == OBJECT_DICT['snake2']:
+                    self.snake2_id = (i, j)
+                if self.cells[i, j].value == OBJECT_DICT['food']:
+                    self.food_id = (i, j)
+                if self.cells[i, j].value == OBJECT_DICT['noise']:
+                    self.noises.append((i, j))
+        self.snake1 = Snake(self.surface, self.snake1_id, self.food_id)
+        self.snake2 = Snake(self.surface, self.snake2_id, self.food_id, is_player_2 = True)
+
+    def save(self):
+        self.init_values = np.zeros((ROWS, COLUMNS), dtype = 'uint8')
+        self.init_values[self.snake1_id[1]][self.snake1_id[0]] = OBJECT_DICT['snake1']
+        self.init_values[self.snake2_id[1]][self.snake2_id[0]] = OBJECT_DICT['snake2']
+        self.init_values[self.food_id[1]][self.food_id[0]] = OBJECT_DICT['food']
+        for noise in self.noises:
+            self.init_values[noise[1]][noise[0]] = OBJECT_DICT['noise']
+
+class Cell(Rectangle):
+    def __init__(self, surface : pygame.Surface, position : tuple[int, int], id : tuple[int, int], value = OBJECT_DICT['empty']):
+        super().__init__(surface, position, CELL_SIZE, CELL_SIZE, border_color = CELL_LINE_COLOR)
+        self.id = id
+        self.value = value
+
+    def draw_object(self):
+        if self.value == OBJECT_DICT['food']:
+            pygame.draw.rect(self.surface, FOOD_COLOR, pygame.Rect(self.position[0] + PART_SIZE, self.position[1] + PART_SIZE, PART_SIZE, PART_SIZE))
+        elif self.value == OBJECT_DICT['noise']:
+            pygame.draw.rect(self.surface, NOISE_COLOR, pygame.Rect(self.position[0], self.position[1], CELL_SIZE, CELL_SIZE))
+
+    def draw_path(self, value):
+        if value == OBJECT_DICT['frontier']:
+            pygame.draw.rect(self.surface, FRONTIER_COLOR, pygame.Rect(self.position[0], self.position[1], CELL_SIZE, CELL_SIZE))
+        elif value == OBJECT_DICT['visited']:
+            pygame.draw.rect(self.surface, VISITED_COLOR, pygame.Rect(self.position[0], self.position[1], CELL_SIZE, CELL_SIZE))
+        elif value == OBJECT_DICT['path']:
+            pygame.draw.rect(self.surface, PATH_COLOR, pygame.Rect(self.position[0], self.position[1], CELL_SIZE, CELL_SIZE))
