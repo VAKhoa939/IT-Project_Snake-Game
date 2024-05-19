@@ -1,27 +1,27 @@
 import pygame
 from constant import *
-from rectangle import *
+from shape import *
 from algorithm import *
 
 class Snake_Part():
-    def __init__(self, surface : pygame.Surface, position : tuple[int, int], direction : str, type : str, color : pygame.Color):
+    def __init__(self, surface: pygame.Surface, position: tuple[int, int], direction: str, type: str, color: pygame.Color) -> None:
         self.direction = direction
         self.type = type
         self.shape = Rectangle(surface, position, PART_SIZE, PART_SIZE, fill_color = color)
         if self.type == 'head':
             self.shape.fill_color = SNAKE_HEAD_COLOR
 
-    def draw(self):
+    def draw(self) -> None:
         self.shape.fill()
 
-    def move(self):
+    def move(self) -> None:
         if self.direction == 'none':
             return
         direction = DIRECTION_DICT[self.direction]
         self.shape.position = (self.shape.position[0] + direction[0] * PART_SIZE, self.shape.position[1] + direction[1] * PART_SIZE)
 
 class Snake:
-    def __init__(self, surface : pygame.Surface, id : tuple[int, int], food_id : tuple[int, int] = INIT_FOOD_ID,  noises : list[tuple[int, int]] = INIT_NOISES, is_player_2 : bool = False):
+    def __init__(self, surface: pygame.Surface, id: tuple[int, int], food_id: tuple[int, int] = INIT_FOOD_ID,  noises: list[tuple[int, int]] = INIT_NOISES, is_player_2 = False) -> None:
         self.surface = surface
         self.id = id
         self.food_id = food_id
@@ -39,8 +39,8 @@ class Snake:
         else:
             self.head_direction = 'right'
         self.head_position = (BOARD_OFFSET + self.id[0] * CELL_SIZE + PART_SIZE, BOARD_OFFSET + self.id[1] * CELL_SIZE + PART_SIZE)
-        self.parts : list[Snake_Part] = []
-        self.position_direction_dict : dict[tuple[int, int], str] = {}
+        self.parts: list[Snake_Part] = []
+        self.position_direction_dict: dict[tuple[int, int], str] = {}
         self.advanced_direction = 'none'
         self.frame = 0
         self.is_eating = False
@@ -49,7 +49,7 @@ class Snake:
         self.generate_init_parts()
         self.algorithm = Algorithm(self.get_parts_id(), self.noises)
 
-    def generate_init_parts(self):
+    def generate_init_parts(self) -> None:
         position = self.head_position
         for part_id in range((INIT_SNAKE_PARTS_NUM - 2) * 3 + 4):
             if part_id == 0:
@@ -62,7 +62,7 @@ class Snake:
             direction = DIRECTION_DICT[self.head_direction]
             position = (position[0] - direction[0] * PART_SIZE, position[1] - direction[1] * PART_SIZE)
 
-    def add_parts(self):
+    def add_parts(self) -> None:
         tail = self.parts[-1]
         tail_direction = DIRECTION_DICT[self.parts[-1].direction]
         new_tail = Snake_Part(self.surface, (tail.shape.position[0] - tail_direction[0] * PART_SIZE, tail.shape.position[1] - tail_direction[1] * PART_SIZE), self.parts[-1].direction, 'tail', self.color)
@@ -73,28 +73,34 @@ class Snake:
         if self.eating_combo == 0:
             self.is_eating = False
 
-    def get_parts_id(self):
-        parts_id : list[tuple[int, int]] = []
+    def get_parts_id(self) -> list[tuple[int, int]]:
+        parts_id: list[tuple[int, int]] = []
         for part in self.parts:
             id = ((part.shape.position[0] - BOARD_OFFSET) // CELL_SIZE, (part.shape.position[1] - BOARD_OFFSET) // CELL_SIZE)
             if id not in parts_id:
                 parts_id.append(id)
         return parts_id
 
-    def draw(self):
+    def draw(self) -> None:
         for part in self.parts:
             part.draw()
 
-    def move(self):
-        if self.frame == 0:
-            if self.advanced_direction != 'none':
-                self.head_direction = self.advanced_direction
-                self.position_direction_dict[self.head_position] = self.head_direction
-                self.advanced_direction = 'none'
+    def set_direction(self) -> None:
+        if self.frame == 0 and self.advanced_direction != 'none':
+            self.head_direction = self.advanced_direction
+            self.position_direction_dict[self.head_position] = self.head_direction
+            self.advanced_direction = 'none'
         for part in self.parts:
             part_position = part.shape.position
-            if part_position in self.position_direction_dict:
-                part.direction = self.position_direction_dict[part_position]
+            if not part_position in self.position_direction_dict:
+                continue
+            part.direction = self.position_direction_dict[part_position]
+            if part.type == 'head':
+                self.head_direction = self.position_direction_dict[part_position]
+
+    def move(self) -> None:
+        for part in self.parts:
+            part_position = part.shape.position
             part.move()
             if part.type == 'head':
                 self.head_position = part.shape.position
@@ -104,7 +110,7 @@ class Snake:
                 self.position_direction_dict.pop(part_position)
         self.frame = (self.frame + 1) % 3
 
-    def handle_keys(self):
+    def handle_keys(self) -> None:
         keys = pygame.key.get_pressed()
         if keys[self.keys[0]] and self.head_direction != 'left':
             direction = 'right'
@@ -118,7 +124,7 @@ class Snake:
             return
         self.advanced_direction = direction
         
-    def is_food_found(self, food_id : tuple[int, int]):
+    def is_food_found(self, food_id: tuple[int, int]) -> bool:
         food_position = (BOARD_OFFSET + food_id[0] * CELL_SIZE + PART_SIZE, BOARD_OFFSET + food_id[1] * CELL_SIZE + PART_SIZE)
         if self.head_position == food_position:
             self.is_eating = True
@@ -127,8 +133,8 @@ class Snake:
             return True
         return False
 
-    def is_dead(self, other_snake_parts : list[Snake_Part] = []):
-        # Touch border
+    def is_dead(self, other_snake_parts: list[Snake_Part] = []) -> bool:
+        # if snake touch a border
         if self.head_position[0] + PART_SIZE == BOARD_WIDTH + BOARD_OFFSET:
             return True
         if self.head_position[1] + PART_SIZE == BOARD_HEIGHT + BOARD_OFFSET:
@@ -138,7 +144,7 @@ class Snake:
         if self.head_position[1] == BOARD_OFFSET:
             return True
         
-        # Touch snake parts
+        # if snake touch a self's part
         parts = self.parts[2:] + other_snake_parts
         for part in parts:
             if (self.head_position[0] + PART_SIZE, self.head_position[1]) == part.shape.position:
@@ -150,7 +156,7 @@ class Snake:
             if (self.head_position[0], self.head_position[1] - PART_SIZE) == part.shape.position:
                 return True
             
-        # Touch noise
+        # if snake touch a noise
         for noise in self.noises:
             noise_position = (noise[0] * CELL_SIZE + BOARD_OFFSET, noise[1] * CELL_SIZE + BOARD_OFFSET)
             if (self.head_position[0] + PART_SIZE, self.head_position[1]) == (noise_position[0], noise_position[1] + PART_SIZE):
@@ -162,15 +168,31 @@ class Snake:
             if (self.head_position[0], self.head_position[1] - CELL_SIZE) == (noise_position[0] + PART_SIZE, noise_position[1]):
                 return True
         return False
+    
+    def is_near_dead(self, other_snake_parts: list[Snake_Part]) -> bool:
+        if self.frame != 0:
+            return False
+        for part in other_snake_parts:
+            if self.head_direction == 'right' and (self.head_position[0] + CELL_SIZE, self.head_position[1]) == part.shape.position:
+                return True
+            if self.head_direction == 'down' and (self.head_position[0], self.head_position[1] + CELL_SIZE) == part.shape.position:
+                return True
+            if self.head_direction == 'left' and (self.head_position[0] - CELL_SIZE, self.head_position[1]) == part.shape.position:
+                return True
+            if self.head_direction == 'up' and (self.head_position[0], self.head_position[1] - CELL_SIZE) == part.shape.position:
+                return True
+        return False
 
-    def find_path(self, algorithm_name : str, food_id : tuple[int, int], other_snake_parts_id : list[tuple[int, int]] = []):
-        if self.algorithm.food_id == food_id:
-            return 'Playing'
+    def find_path(self, algorithm_name: str, food_id: tuple[int, int], other_snake_parts: list[Snake_Part] = []) -> None:
+        other_snake_parts_id: list[tuple[int, int]] = []
+        for part in other_snake_parts:
+            id = ((part.shape.position[0] - BOARD_OFFSET) // CELL_SIZE, (part.shape.position[1] - BOARD_OFFSET) // CELL_SIZE)
+            if id not in other_snake_parts_id:
+                other_snake_parts_id.append(id)
         self.algorithm.input_current_state(self.get_parts_id(), other_snake_parts_id, food_id)
         if algorithm_name == 'BFS':
             self.algorithm.bfs()
         if not self.algorithm.is_found:
-            return 'GAME OVER!'
+            return
         for position in self.algorithm.path:
             self.position_direction_dict[position[0]] = position[1]
-        return 'Playing'

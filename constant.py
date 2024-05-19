@@ -25,15 +25,16 @@ SNAKE1_COLOR = GREEN
 SNAKE2_COLOR = ORANGE
 SNAKE_HEAD_COLOR = WHITE
 FOOD_COLOR = RED
-NOISE_COLOR = KHAKI
+NOISE_COLOR = GRAY
 FRONTIER_COLOR = YELLOW
 VISITED_COLOR = ORANGE
 PATH_COLOR = CYAN
-
 TEXT_COLOR = WHITE
 
 TEXT_FONT = 'Consolas'
 TEXT_SIZE = 25
+
+FPS = 20
 
 BOARD_WIDTH = 1200 # MAX = 1620
 BOARD_HEIGHT = 600 # MAX = 920
@@ -43,11 +44,11 @@ PART_SIZE = CELL_SIZE // 3
 COLUMNS = BOARD_WIDTH // CELL_SIZE
 ROWS = BOARD_HEIGHT // CELL_SIZE
 MODE_NAMES : list[str] = ['Manual', 'DFS', 'BFS', 'UCS', 'Greedy', 'A Star', 'R Learning']
-OBJECT_NAMES : list[str] = ['(None)', 'Empty', '1st Snake', '2nd Snake', 'Food', 'Noise']
+OBJECT_NAMES : list[str] = ['Empty', '1st Snake', '2nd Snake', 'Food', 'Noise']
 OBJECT_DICT : dict[str, int] = {'empty' : 0, 'snake1' : 1, 'snake2' : 2, 'food' : 3, 'noise' : 4, 'frontier' : 5, 'visited' : 6, 'path' : 7}
 INIT_SNAKE_PARTS_NUM = 3
 INIT_SNAKE1_ID : tuple[int, int] = (5, 5)
 INIT_SNAKE2_ID : tuple[int, int] = (5, 8)
 INIT_FOOD_ID = (10, 5)
-INIT_NOISES : list[tuple[int, int]] = []
-DIRECTION_DICT : dict[str, tuple[int, int]] = {'right' : (1, 0), 'down' : (0, 1), 'left' : (-1, 0), 'up' : (0, -1)}
+INIT_NOISES: list[tuple[int, int]] = []
+DIRECTION_DICT: dict[str, tuple[int, int]] = {'right' : (1, 0), 'down' : (0, 1), 'left' : (-1, 0), 'up' : (0, -1)}
