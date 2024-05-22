@@ -40,17 +40,10 @@ class Board(Rectangle):
         self.draw_border()
 
     def draw_path(self) -> None:
-        frontier_id: list[tuple[int, int]] = []
-        for frontier_node in self.snake1.algorithm.frontier:
-            frontier_id.append(frontier_node.id)
+        frontier_id: list[tuple[int, int]] = [frontier_node.id for frontier_node in self.snake1.algorithm.frontier]
+        visited_id: list[tuple[int, int]] = [visited_key for visited_key in self.snake1.algorithm.visited]
 
-        visited_id: list[tuple[int, int]] = []
-        for visited_key in self.snake1.algorithm.visited:
-            visited_id.append(visited_key)
-
-        path_id: list[tuple[int, int]] = []
-        for part_id in self.snake1.algorithm.snake_parts_id:
-            path_id.append(part_id)
+        path_id: list[tuple[int, int]] = [part_id for part_id in self.snake1.algorithm.snake_parts_id]
         for position in self.snake1.algorithm.path:
             id = ((position[0][0] - BOARD_OFFSET) // CELL_SIZE, (position[0][1] - BOARD_OFFSET) // CELL_SIZE)
             path_id.append(id)

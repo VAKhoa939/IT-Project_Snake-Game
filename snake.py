@@ -189,9 +189,17 @@ class Snake:
             id = ((part.shape.position[0] - BOARD_OFFSET) // CELL_SIZE, (part.shape.position[1] - BOARD_OFFSET) // CELL_SIZE)
             if id not in other_snake_parts_id:
                 other_snake_parts_id.append(id)
-        self.algorithm.input_current_state(self.get_parts_id(), other_snake_parts_id, food_id)
-        if algorithm_name == 'BFS':
+        self.algorithm.input_current_state(self.get_parts_id(), other_snake_parts_id, food_id, algorithm_name)
+        if algorithm_name == 'DFS':
+            self.algorithm.dfs()
+        elif algorithm_name == 'BFS':
             self.algorithm.bfs()
+        elif algorithm_name == 'UCS':
+            self.algorithm.ucs()
+        elif algorithm_name == 'Greedy':
+            self.algorithm.greedy()
+        elif algorithm_name == 'A Star':
+            self.algorithm.a_star()
         if not self.algorithm.is_found:
             return
         for position in self.algorithm.path:
