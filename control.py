@@ -4,8 +4,8 @@ from constant import *
 from shape import *
 
 class Textbox(Rectangle):
-    def __init__(self, surface: pygame.Surface, position: tuple[int, int], width: int, height: int, text: str, prefix = '', border_color = BACKGROUND_COLOR, fill_color = BACKGROUND_COLOR, text_color = TEXT_COLOR, text_font = TEXT_FONT, text_size = TEXT_SIZE) -> None:
-        super().__init__(surface, position, width, height, border_color = border_color, fill_color = fill_color)
+    def __init__(self, surface: pygame.Surface, position: tuple[int, int], width: int, height: int, text = '', prefix = '', border_color = BACKGROUND_COLOR, fill_color = BACKGROUND_COLOR, text_color = TEXT_COLOR, text_font = TEXT_FONT, text_size = TEXT_SIZE, image_path = '') -> None:
+        super().__init__(surface, position, width, height, border_color = border_color, fill_color = fill_color, image_path = image_path)
         self.prefix = prefix
         self.text = text 
         self.text_color = text_color
@@ -13,18 +13,19 @@ class Textbox(Rectangle):
         self.text_font = pygame.font.SysFont(text_font, self.text_size, bold=True)
     
     def draw(self) -> None:
-        self.draw_border()
+        if not self.has_image:
+            self.draw_border()
         self.fill()
         label = self.text_font.render(self.prefix + self.text, True, self.text_color)
         self.surface.blit(label, (self.position[0] + (self.width // 2 - label.get_width() // 2), self.position[1] + (self.height // 2 - label.get_height() // 2)))
 
 class Button(Textbox):
-    def __init__(self, surface: pygame.Surface, position: tuple[int, int], width: int, height: int, text: str, border_color = BORDER_COLOR, fill_color = BUTTON_COLOR) -> None:
-        super().__init__(surface, position, width, height, text, border_color = border_color, fill_color = fill_color)
+    def __init__(self, surface: pygame.Surface, position: tuple[int, int], width: int, height: int, text = '', border_color = BORDER_COLOR, fill_color = BUTTON_COLOR, image_path = '') -> None:
+        super().__init__(surface, position, width, height, text, border_color = border_color, fill_color = fill_color, image_path = image_path)
 
 class ComboBox(Button):
-    def __init__(self, surface: pygame.Surface, position: tuple[int, int], width: int, height: int, defaut_option: str, options: list[str]) -> None:
-        super().__init__(surface, position, width, height, defaut_option, BORDER_COLOR, COMBOBOX_COLOR)
+    def __init__(self, surface: pygame.Surface, position: tuple[int, int], width: int, height: int, defaut_option: str, options: list[str], image_path = '') -> None:
+        super().__init__(surface, position, width, height, defaut_option, BORDER_COLOR, image_path = image_path)
         self.defaut_option = defaut_option
         self.btn_options: list[Button] = []
         for i, option in enumerate(options):

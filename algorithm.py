@@ -57,6 +57,8 @@ class Algorithm:
         if self.name != 'DFS':
             frontier_id: list[tuple[int, int]] = [frontier_node.id for frontier_node in self.frontier]
             invalid_id += frontier_id
+#        frontier_id: list[tuple[int, int]] = [frontier_node.id for frontier_node in self.frontier]
+#        invalid_id += frontier_id
 
         i = 0
         neighbors_num = len(neighbors)
@@ -98,6 +100,11 @@ class Algorithm:
                 return
             
             neighbors: list[Node] = self.find_neighbors(node)
+#            for neighbor in neighbors:
+#                self.frontier.append(neighbor)
+#                self.node_num += 1
+#                if self.max_depth < neighbor.depth:
+#                    self.max_depth = neighbor.depth
             while len(neighbors) != 0:
                 neighbor: Node = choice(neighbors)
                 self.frontier.append(neighbor)

@@ -15,7 +15,7 @@ YELLOW = pygame.Color(255, 255, 0)
 PURPLE = pygame.Color(128, 0, 255)
 
 BACKGROUND_COLOR = BLUE
-BOARD_COLOR = BLACK
+BOARD_COLOR = (50, 50, 50)
 BORDER_COLOR = GREEN
 CELL_LINE_COLOR = WHITE
 BUTTON_COLOR = GREEN
@@ -43,7 +43,7 @@ CELL_SIZE = 60
 PART_SIZE = CELL_SIZE // 3
 COLUMNS = BOARD_WIDTH // CELL_SIZE
 ROWS = BOARD_HEIGHT // CELL_SIZE
-MODE_NAMES : list[str] = ['Manual', 'DFS', 'BFS', 'UCS', 'Greedy', 'A Star', 'R Learning']
+MODE_NAMES : list[str] = ['Manual', 'DFS', 'BFS', 'UCS', 'Greedy', 'A Star']
 OBJECT_NAMES : list[str] = ['Empty', '1st Snake', '2nd Snake', 'Food', 'Noise']
 OBJECT_DICT : dict[str, int] = {'empty' : 0, 'snake1' : 1, 'snake2' : 2, 'food' : 3, 'noise' : 4, 'frontier' : 5, 'visited' : 6, 'path' : 7}
 INIT_SNAKE_PARTS_NUM = 3

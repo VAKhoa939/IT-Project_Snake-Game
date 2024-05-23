@@ -11,47 +11,54 @@ class Game:
         pygame.display.set_caption('Snake Game')
         self.fps_controller = pygame.time.Clock()
         self.window = pygame.display.set_mode((0, 0), pygame.RESIZABLE)
+        self.window_width, self.window_height = self.window.get_size()
+        try:
+            self.background = pygame.transform.scale(pygame.image.load('data/background.png'), self.window.get_size())
+        except FileNotFoundError:
+            print("Error: File 'background.png' not found.")
+            self.background = None
         self.board = Board(self.window)
         self.page = 1
         self.is_two_player = True
-        self.lbl_status = Textbox(self.window, (1350, 50), 150, 50, 'Waiting', prefix = 'Status: ')
 
         # Page 1
-        self.lbl_player = Textbox(self.window, (1300, 100), 250, 50, 'Number of players:')
-        self.btn_player1 = Button(self.window, (1300, 150), 140, 50, '1 Player')
-        self.btn_player2 = Button(self.window, (1450, 150), 140, 50, '2 Players')
-        self.lbl_mode_title_player1 = Textbox(self.window, (1300, 250), 250, 50, 'Mode for Player 1:')
-        self.cbb_mode_player1 = ComboBox(self.window, (1300, 300), 250, 50, 'Manual', MODE_NAMES)
-        self.lbl_mode_title_player2 = Textbox(self.window, (1300, 400), 250, 50, 'Mode for Player 2:')
-        self.cbb_mode_player2 = ComboBox(self.window, (1300, 450), 250, 50, 'Manual', MODE_NAMES)
-        self.btn_next = Button(self.window, (1350, 700), 150, 50, 'Continue')
-        self.btn_quit = Button(self.window, (1350, 800), 150, 50, 'Quit')
+        self.lbl_player = Textbox(self.window, (1420, 100), 300, 50, 'Number of players:')
+        self.btn_player1 = Button(self.window, (1370, 200), 140, 50, image_path='data/button1.png')
+        self.btn_player2 = Button(self.window, (1620, 200), 140, 50, image_path='data/button2.png')
+        self.lbl_mode_title_player1 = Textbox(self.window, (1270, 300), 300, 50, 'Mode for Player 1:')
+        self.cbb_mode_player1 = ComboBox(self.window, (1270, 400), 300, 50, 'Manual', MODE_NAMES)
+        self.lbl_mode_title_player2 = Textbox(self.window, (1600, 300), 300, 50, 'Mode for Player 2:')
+        self.cbb_mode_player2 = ComboBox(self.window, (1600, 400), 300, 50, 'Manual', MODE_NAMES)
+        self.btn_continue = Button(self.window, (1500, 800), 150, 50, image_path='data/button_continue.png')
+        self.btn_quit = Button(self.window, (1500, 900), 150, 50, image_path='data/button_quit.png')
 
         # Page 2
-        self.timer = Timer(self.window, (1350, 150), 150, 50)
-        self.lbl_dead = Textbox(self.window, (1350, 250), 150, 50, ' died')
-        self.btn_play = Button(self.window, (1350, 400), 150, 50, 'Play')
-        self.btn_pause = Button(self.window, (1350, 500), 150, 50, 'Pause')
-        self.btn_reset = Button(self.window, (1350, 600), 150, 50, 'Reset')
-        self.btn_edit = Button(self.window, (1350, 700), 150, 50, 'Edit Mode')
-        self.btn_back1 = Button(self.window, (1350, 800), 150, 50, 'Go Back')
-        self.lbl_statistic_player1 = Textbox(self.window, (100, 700), 150, 50, 'Player 1: ')
-        self.lbl_score_player1 = Textbox(self.window, (100, 750), 150, 50, '0', prefix = '- Score: ')
-        self.lbl_mode_player1 = Textbox(self.window, (100, 800), 200, 50, '', prefix = '- Mode: ')
-        self.lbl_statistic_player2 = Textbox(self.window, (700, 700), 150, 50, 'Player 2: ')
-        self.lbl_score_player2 = Textbox(self.window, (700, 750), 150, 50, '0', prefix = '- Score: ')
-        self.lbl_mode_player2 = Textbox(self.window, (700, 800), 200, 50, '', prefix = '- Mode: ')
-        self.lbl_node = Textbox(self.window, (700, 750), 150, 50, '0', prefix = '- Node: ')
-        self.lbl_depth = Textbox(self.window, (700, 800), 150, 50, '0', prefix = '- Depth: ')
+        self.lbl_status = Textbox(self.window, (1420, 50), 300, 50, 'Waiting', prefix='Status: ')
+        self.timer = Timer(self.window, (1420, 150), 300, 50)
+        self.lbl_dead = Textbox(self.window, (1420, 250), 300, 50, ' died')
+        self.btn_play = Button(self.window, (1500, 350), 150, 50, image_path='data/button_play.png')
+        self.btn_pause = Button(self.window, (1500, 450), 150, 50, image_path='data/button_pause.png')
+        self.btn_reset = Button(self.window, (1500, 550), 150, 50, image_path='data/button_reset.png')
+        self.btn_edit = Button(self.window, (1500, 650), 150, 50, image_path='data/button_edit.png')
+        self.btn_back1 = Button(self.window, (1500, 750), 150, 50, image_path='data/button_back.png')
+        self.lbl_statistic_player1 = Textbox(self.window, (100, 700), 300, 50, 'Player 1:')
+        self.lbl_score_player1 = Textbox(self.window, (100, 750), 300, 50, '0', prefix='Score: ')
+        self.lbl_mode_player1 = Textbox(self.window, (100, 800), 300, 50, '', prefix='Mode: ')
+        self.lbl_statistic_player2 = Textbox(self.window, (700, 700), 300, 50, 'Player 2:')
+        self.lbl_score_player2 = Textbox(self.window, (700, 750), 300, 50, '0', prefix='Score: ')
+        self.lbl_mode_player2 = Textbox(self.window, (700, 800), 300, 50, '', prefix='Mode: ')
+        self.lbl_node = Textbox(self.window, (700, 750), 300, 50, '0', prefix='Node: ')
+        self.lbl_depth = Textbox(self.window, (700, 800), 300, 50, '0', prefix='Depth: ')
 
         # Page 3
-        self.btn_reset_edit = Button(self.window, (1350, 200), 150, 50, 'Reset')
-        self.btn_save_edit = Button(self.window, (1350, 300), 150, 50, 'Save')
-        self.cbb_object = ComboBox(self.window, (1300, 400), 250, 50, 'Choose object', OBJECT_NAMES)
-        self.btn_back2 = Button(self.window, (1350, 800), 150, 50, 'Go Back')
+        self.btn_reset_edit = Button(self.window, (1500, 200), 150, 50, image_path='data/button_reset.png')
+        self.btn_save_edit = Button(self.window, (1500, 300), 150, 50, image_path='data/button_save.png')
+        self.cbb_object = ComboBox(self.window, (1420, 400), 300, 50, 'Choose object', OBJECT_NAMES)
+        self.btn_back2 = Button(self.window, (1500, 800), 150, 50, image_path='data/button_back.png')
 
     def draw(self) -> None:
-        self.window.fill(BACKGROUND_COLOR)
+        if self.background:
+            self.window.blit(self.background, (0, 0))
         self.board.draw()
         if self.page == 1:
             self.draw_ui_1st_page()
@@ -64,14 +71,13 @@ class Game:
         self.lbl_player.draw()
         self.btn_player1.draw()
         self.btn_player2.draw()
+        self.btn_continue.draw()
+        self.btn_quit.draw()
         self.lbl_mode_title_player1.draw()
         self.cbb_mode_player1.draw()
-        if self.is_two_player and not self.cbb_mode_player1.is_open:
+        if self.is_two_player:
             self.lbl_mode_title_player2.draw()
             self.cbb_mode_player2.draw()
-        if not self.cbb_mode_player2.is_open:
-            self.btn_next.draw()
-            self.btn_quit.draw()
 
     def draw_ui_2nd_page(self) -> None:
         self.lbl_status.draw()
@@ -103,7 +109,6 @@ class Game:
             self.lbl_mode_player2.draw()
 
     def draw_ui_3rd_page(self) -> None:
-        self.lbl_status.draw()
         self.btn_reset_edit.draw()
         self.btn_save_edit.draw()
         self.cbb_object.draw()
@@ -124,17 +129,15 @@ class Game:
         if self.btn_player2.is_clicked(event, mouse):
             self.is_two_player = self.board.is_two_player = True
         
-        if not self.cbb_mode_player1.is_open and not self.cbb_mode_player2.is_open:
-            if self.btn_next.is_clicked(event, mouse):
-                self.page = 2
-            
-            if self.btn_quit.is_clicked(event, mouse):
-                pygame.quit()
-                exit()
-        
-        if self.is_two_player and not self.cbb_mode_player1.is_open:
-            self.cbb_mode_player2.is_clicked(event, mouse)
         self.cbb_mode_player1.is_clicked(event, mouse)
+        self.cbb_mode_player2.is_clicked(event, mouse)
+        
+        if self.btn_continue.is_clicked(event, mouse):
+            self.page = 2
+        
+        if self.btn_quit.is_clicked(event, mouse):
+            pygame.quit()
+            exit()
 
     def handle_2nd_page(self, event: pygame.event.Event, mouse: tuple[int, int]):
         if self.lbl_status.text == 'Playing':
@@ -171,20 +174,17 @@ class Game:
 
     def handle_3rd_page(self, event: pygame.event.Event, mouse: tuple[int, int]) -> None:
         if self.cbb_object.text != self.cbb_object.defaut_option:
-            self.lbl_status.text = self.board.is_clicked(event, mouse, self.cbb_object.text)
+            self.board.is_clicked(event, mouse, self.cbb_object.text)
         
         if self.btn_reset_edit.is_clicked(event, mouse):
             self.board.reset()
-            self.lbl_status.text = 'Reset'
         
         if self.btn_save_edit.is_clicked(event, mouse):
             self.board.save()
-            self.lbl_status.text = 'Saved'
         self.cbb_object.is_clicked(event, mouse)
         
         if self.btn_back2.is_clicked(event, mouse):
             self.board.reset()
-            self.lbl_status.text = 'Waiting'
             self.page = 2
 
     def play(self) -> None:

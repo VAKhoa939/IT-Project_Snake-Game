@@ -72,15 +72,15 @@ class Board(Rectangle):
                 return OBJECT_DICT['noise']
         return OBJECT_DICT['empty'] 
 
-    def is_clicked(self, event: pygame.event.Event, mouse: tuple[int, int], text: str) -> str:
+    def is_clicked(self, event: pygame.event.Event, mouse: tuple[int, int], text: str) -> None:
         if super().is_clicked(event, mouse):
             value = self.text_to_value(text)
             cell_id = ((mouse[0] - self.position[0]) // CELL_SIZE, (mouse[1] - self.position[1]) // CELL_SIZE)
             if self.cells[cell_id].value == value:
-                return 'Valid'
+                return
             
             if not self.is_id_valid(cell_id, value):
-                return 'Invalid'
+                return
             
             if value == OBJECT_DICT['empty']:
                 self.noises.remove(cell_id)
@@ -104,8 +104,6 @@ class Board(Rectangle):
             self.cells[cell_id].value = value
             self.snake1 = Snake(self.surface, self.snake1_id, self.food_id, self.noises)
             self.snake2 = Snake(self.surface, self.snake2_id, self.food_id, self.noises, is_player_2 = True)
-            return 'Valid'
-        return 'Waiting'
 
     def is_id_valid(self, id, value) -> bool:
         if value == OBJECT_DICT['snake1'] or value == OBJECT_DICT['snake2']:
