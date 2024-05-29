@@ -185,6 +185,10 @@ class Snake:
         return False
 
     def find_path(self, algorithm_name: str, food_id: tuple[int, int], other_snake_parts: list[Snake_Part] = []) -> None:
+        if self.frame != 0:
+            return
+        if algorithm_name == 'DFS' and food_id == self.food_id:
+            return
         other_snake_parts_id: list[tuple[int, int]] = []
         for part in other_snake_parts:
             id = ((part.shape.position[0] - BOARD_OFFSET) // CELL_SIZE, (part.shape.position[1] - BOARD_OFFSET) // CELL_SIZE)

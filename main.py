@@ -207,6 +207,7 @@ class Game:
                 self.board.reset()
                 self.lbl_status.text = 'Waiting'
                 self.page = 3
+                self.board.is_two_player = True
 
             if self.btn_back.is_clicked(event, mouse):
                 self.board.reset()
@@ -237,6 +238,7 @@ class Game:
             self.lbl_note.text = 'Remember to save before go back'
             self.board.reset()
             self.page = 2
+            self.board.is_two_player = True if self.is_two_player else False
 
     def play(self) -> None:
         if not self.is_two_player:
@@ -253,7 +255,7 @@ class Game:
             self.lbl_dead.prefix = 'Player 1'
             return
 
-        if self.cbb_mode_player1.text != 'Manual' and self.board.snake1.algorithm.food_id != self.board.food_id:
+        if self.cbb_mode_player1.text != 'Manual':
             self.board.snake1.find_path(self.cbb_mode_player1.text, self.board.food_id)
             self.lbl_node.text = str(self.board.snake1.algorithm.node_num)
             self.lbl_depth.text = str(self.board.snake1.algorithm.max_depth)
@@ -271,7 +273,7 @@ class Game:
             self.lbl_dead.prefix = 'Player 1'
             return
 
-        if self.cbb_mode_player1.text != 'Manual' and self.board.snake1.algorithm.food_id != self.board.food_id:
+        if self.cbb_mode_player1.text != 'Manual':
             self.board.snake1.find_path(self.cbb_mode_player1.text, self.board.food_id, self.board.snake2.parts)
         
         self.board.snake1.set_direction()
@@ -287,7 +289,7 @@ class Game:
             self.lbl_dead.prefix = 'Player 2'
             return
 
-        if self.cbb_mode_player2.text != 'Manual' and self.board.snake2.algorithm.food_id != self.board.food_id:
+        if self.cbb_mode_player2.text != 'Manual':
             self.board.snake2.find_path(self.cbb_mode_player2.text, self.board.food_id, self.board.snake1.parts)
         
         self.board.snake2.set_direction()
