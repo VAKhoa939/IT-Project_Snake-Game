@@ -98,11 +98,6 @@ class Algorithm:
                 return
             
             neighbors: list[Node] = self.find_neighbors(node)
-#            for neighbor in neighbors:
-#                self.frontier.append(neighbor)
-#                self.node_num += 1
-#                if self.max_depth < neighbor.depth:
-#                    self.max_depth = neighbor.depth
             while len(neighbors) != 0:
                 neighbor: Node = choice(neighbors)
                 self.frontier.append(neighbor)

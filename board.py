@@ -110,7 +110,6 @@ class Board(Rectangle):
         
         elif value == OBJECT_DICT['noise']:
             self.noises.append(cell_id)
-            self.snake1.noises.append(cell_id)
 
         self.cells[cell_id].value = value
         self.snake1 = Snake(self.surface, self.snake1_id, self.food_id, self.noises)
