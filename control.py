@@ -65,7 +65,7 @@ class Timer(Textbox):
         self.text += ('0' + str(second)) if second < 10 else str(second)
 
     def start(self) -> None:
-        self.start_time = self.end_time = pygame.time.get_ticks()
+        self.start_time = self.end_time = 0
 
     def count(self) -> None:
         self.end_time = self.end_time + (1000 // FPS)

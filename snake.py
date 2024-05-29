@@ -188,6 +188,8 @@ class Snake:
     def find_path(self, algorithm_name: str, food_id: tuple[int, int], other_snake_parts: list[Snake_Part] = []) -> None:
         if self.frame != 0:
             return
+        if self.algorithm.is_found:
+            self.algorithm.is_found = False if self.is_near_dead(other_snake_parts) else True
         if algorithm_name == 'DFS' and self.algorithm.is_found:
             return
         other_snake_parts_id: list[tuple[int, int]] = []

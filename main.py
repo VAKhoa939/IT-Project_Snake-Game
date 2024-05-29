@@ -267,36 +267,25 @@ class Game:
         if self.board.snake1.is_food_found(self.board.food_id) or self.board.snake2.is_food_found(self.board.food_id):
             self.board.respawn_food()
 
-        # First snake's move
         if self.board.snake1.is_dead(self.board.snake2.parts):
             self.lbl_status.text = 'GAME OVER!'
             self.lbl_dead.prefix = 'Player 1'
             return
-
-        if self.cbb_mode_player1.text != 'Manual':
-            self.board.snake1.find_path(self.cbb_mode_player1.text, self.board.food_id, self.board.snake2.parts)
         
-        self.board.snake1.set_direction()
-        if self.cbb_mode_player1.text != 'Manual' and self.board.snake1.is_near_dead(self.board.snake2.parts):
-            self.board.snake1.find_path(self.cbb_mode_player1.text, self.board.food_id, self.board.snake2.parts)
-            self.board.snake1.set_direction()
-
-        self.board.snake1.move()
-
-        # Second snake's move
         if self.board.snake2.is_dead(self.board.snake1.parts):
             self.lbl_status.text = 'GAME OVER!'
             self.lbl_dead.prefix = 'Player 2'
             return
 
+        if self.cbb_mode_player1.text != 'Manual':
+            self.board.snake1.find_path(self.cbb_mode_player1.text, self.board.food_id, self.board.snake2.parts)
+
         if self.cbb_mode_player2.text != 'Manual':
             self.board.snake2.find_path(self.cbb_mode_player2.text, self.board.food_id, self.board.snake1.parts)
         
+        self.board.snake1.set_direction()
+        self.board.snake1.move()
         self.board.snake2.set_direction()
-        if self.cbb_mode_player2.text != 'Manual' and self.board.snake2.is_near_dead(self.board.snake1.parts):
-            self.board.snake2.find_path(self.cbb_mode_player2.text, self.board.food_id, self.board.snake1.parts)
-            self.board.snake2.set_direction()
-
         self.board.snake2.move()
 
 def main() -> None:
