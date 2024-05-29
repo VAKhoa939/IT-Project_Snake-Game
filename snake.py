@@ -131,6 +131,7 @@ class Snake:
             self.is_eating = True
             self.eating_combo += 1
             self.length += 1
+            self.algorithm.is_found = False
             return True
         return False
 
@@ -187,7 +188,7 @@ class Snake:
     def find_path(self, algorithm_name: str, food_id: tuple[int, int], other_snake_parts: list[Snake_Part] = []) -> None:
         if self.frame != 0:
             return
-        if algorithm_name == 'DFS' and food_id == self.food_id:
+        if algorithm_name == 'DFS' and self.algorithm.is_found:
             return
         other_snake_parts_id: list[tuple[int, int]] = []
         for part in other_snake_parts:
