@@ -4,7 +4,7 @@ from constant import *
 from shape import *
 
 class Textbox(Rectangle):
-    def __init__(self, surface: pygame.Surface, position: tuple[int, int], width: int, height: int, text = '', prefix = '', border_color = BACKGROUND_COLOR, fill_color = BACKGROUND_COLOR, text_color = TEXT_COLOR, text_font = TEXT_FONT, text_size = TEXT_SIZE, image_path = '') -> None:
+    def __init__(self, surface: pygame.Surface, position: tuple[int, int], width: int, height: int, text: str, prefix = '', border_color = BACKGROUND_COLOR, fill_color = BACKGROUND_COLOR, text_color = TEXT_COLOR, text_font = TEXT_FONT, text_size = TEXT_SIZE, image_path = '') -> None:
         super().__init__(surface, position, width, height, border_color = border_color, fill_color = fill_color, image_path = image_path)
         self.prefix = prefix
         self.text = text 
@@ -20,16 +20,16 @@ class Textbox(Rectangle):
         self.surface.blit(label, (self.position[0] + (self.width // 2 - label.get_width() // 2), self.position[1] + (self.height // 2 - label.get_height() // 2)))
 
 class Button(Textbox):
-    def __init__(self, surface: pygame.Surface, position: tuple[int, int], width: int, height: int, text = '', border_color = BORDER_COLOR, fill_color = BUTTON_COLOR, image_path = '') -> None:
-        super().__init__(surface, position, width, height, text, border_color = border_color, fill_color = fill_color, image_path = image_path)
+    def __init__(self, surface: pygame.Surface, position: tuple[int, int], text = '', border_color = BORDER_COLOR, fill_color = BUTTON_COLOR, image_path = 'images/button.png') -> None:
+        super().__init__(surface, position, 150, 50, text, border_color = border_color, fill_color = fill_color, text_color = BLACK, text_size = 20, image_path = image_path)
 
-class ComboBox(Button):
+class ComboBox(Textbox):
     def __init__(self, surface: pygame.Surface, position: tuple[int, int], width: int, height: int, defaut_option: str, options: list[str], image_path = '') -> None:
-        super().__init__(surface, position, width, height, defaut_option, BORDER_COLOR, image_path = image_path)
+        super().__init__(surface, position, width, height, text = defaut_option, border_color = BORDER_COLOR, fill_color = COMBOBOX_COLOR, image_path = image_path)
         self.defaut_option = defaut_option
-        self.btn_options: list[Button] = []
+        self.btn_options: list[Textbox] = []
         for i, option in enumerate(options):
-            self.btn_options.append(Button(self.surface, (self.position[0], self.position[1] + (i + 1) * height), self.width, self.height, option, self.border_color, OPTION_COLOR))
+            self.btn_options.append(Textbox(self.surface, (self.position[0], self.position[1] + (i + 1) * height), self.width, self.height, text = option, border_color = self.border_color, fill_color = OPTION_COLOR))
         self.is_open = False
 
     def draw(self) -> None:
@@ -68,7 +68,7 @@ class Timer(Textbox):
         self.start_time = self.end_time = pygame.time.get_ticks()
 
     def count(self) -> None:
-        self.end_time = pygame.time.get_ticks()
+        self.end_time = self.end_time + (1000 // FPS)
 
     def pause(self) -> None:
         self.milisecond += (self.end_time - self.start_time)

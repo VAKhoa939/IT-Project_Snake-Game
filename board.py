@@ -10,10 +10,9 @@ class Board(Rectangle):
         self.init_values = np.zeros((ROWS, COLUMNS), dtype = 'uint8')
         for i in range(COLUMNS):
             for j in range(ROWS):
-                self.cells[i, j] = Cell(self.surface, [self.position[0] + CELL_SIZE * i, self.position[1] + CELL_SIZE * j], [i, j])
+                self.cells[i, j] = Cell(self.surface, (self.position[0] + CELL_SIZE * i, self.position[1] + CELL_SIZE * j), (i, j))
         self.food_id = INIT_FOOD_ID
         self.noises: list[tuple[int, int]] = INIT_NOISES
-        self.is_two_player = True
         
         self.snake1_id = INIT_SNAKE1_ID
         self.snake1 = Snake(self.surface, INIT_SNAKE1_ID)
@@ -24,11 +23,14 @@ class Board(Rectangle):
         self.cells[self.snake2_id].value = self.init_values[self.snake2_id[1]][self.snake2_id[0]] = OBJECT_DICT['snake2']
 
         self.cells[self.food_id].value = self.init_values[self.food_id[1]][self.food_id[0]] = OBJECT_DICT['food']
-        self.is_edit_mode = False
+
+        self.is_two_player = True
+        self.allow_show_path = True
+        self.is_mouse_hold = False
 
     def draw(self) -> None:
         self.board = pygame.draw.rect(self.surface, BOARD_COLOR, pygame.Rect(self.position[0], self.position[1], self.width, self.height))
-        if not self.is_two_player:
+        if not self.is_two_player and self.allow_show_path:
             if self.snake1.algorithm.is_found:
                 self.draw_path()
         self.snake1.draw()
@@ -70,40 +72,49 @@ class Board(Rectangle):
                 return OBJECT_DICT['food']
             elif i == 4:
                 return OBJECT_DICT['noise']
-        return OBJECT_DICT['empty'] 
+        return OBJECT_DICT['empty']
 
-    def is_clicked(self, event: pygame.event.Event, mouse: tuple[int, int], text: str) -> None:
-        if super().is_clicked(event, mouse):
-            value = self.text_to_value(text)
-            cell_id = ((mouse[0] - self.position[0]) // CELL_SIZE, (mouse[1] - self.position[1]) // CELL_SIZE)
-            if self.cells[cell_id].value == value:
-                return
-            
-            if not self.is_id_valid(cell_id, value):
-                return
-            
-            if value == OBJECT_DICT['empty']:
-                self.noises.remove(cell_id)
-            
-            elif value == OBJECT_DICT['snake1']:
-                self.cells[self.snake1_id].value = OBJECT_DICT['empty']
-                self.snake1_id = cell_id
-            
-            elif value == OBJECT_DICT['snake2']:
-                self.cells[self.snake2_id].value = OBJECT_DICT['empty']
-                self.snake2_id = cell_id
-            
-            elif value == OBJECT_DICT['food']:
-                self.cells[self.food_id].value = OBJECT_DICT['empty']
-                self.food_id = self.snake1.food_id = self.snake2.food_id = cell_id
-            
-            elif value == OBJECT_DICT['noise']:
-                self.noises.append(cell_id)
-                self.snake1.noises.append(cell_id)
+    def is_released(self, event: pygame.event.Event, mouse: tuple[int, int]) -> bool:
+        if event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(mouse[0], mouse[1]):
+            return True
+        return False
 
-            self.cells[cell_id].value = value
-            self.snake1 = Snake(self.surface, self.snake1_id, self.food_id, self.noises)
-            self.snake2 = Snake(self.surface, self.snake2_id, self.food_id, self.noises, is_player_2 = True)
+    def is_editing(self, event: pygame.event.Event, mouse: tuple[int, int], text: str) -> bool:
+        if self.is_clicked(event, mouse):
+            self.is_mouse_hold = True
+        if self.is_released(event, mouse):
+            self.is_mouse_hold = False
+        if not self.is_mouse_hold:
+            return False
+        value = self.text_to_value(text)
+        cell_id: tuple[int, int] = ((mouse[0] - BOARD_OFFSET) // CELL_SIZE, (mouse[1] - BOARD_OFFSET) // CELL_SIZE)
+        if not self.cells[cell_id].value == value and self.is_id_valid(cell_id, value):
+            self.change_value(cell_id, value)
+        return True
+
+    def change_value(self, cell_id: tuple[int, int], value: int):
+        if value == OBJECT_DICT['empty']:
+            self.noises.remove(cell_id)
+        
+        elif value == OBJECT_DICT['snake1']:
+            self.cells[self.snake1_id].value = OBJECT_DICT['empty']
+            self.snake1_id = cell_id
+        
+        elif value == OBJECT_DICT['snake2']:
+            self.cells[self.snake2_id].value = OBJECT_DICT['empty']
+            self.snake2_id = cell_id
+        
+        elif value == OBJECT_DICT['food']:
+            self.cells[self.food_id].value = OBJECT_DICT['empty']
+            self.food_id = self.snake1.food_id = self.snake2.food_id = cell_id
+        
+        elif value == OBJECT_DICT['noise']:
+            self.noises.append(cell_id)
+            self.snake1.noises.append(cell_id)
+
+        self.cells[cell_id].value = value
+        self.snake1 = Snake(self.surface, self.snake1_id, self.food_id, self.noises)
+        self.snake2 = Snake(self.surface, self.snake2_id, self.food_id, self.noises, is_player_2 = True)
 
     def is_id_valid(self, id, value) -> bool:
         if value == OBJECT_DICT['snake1'] or value == OBJECT_DICT['snake2']:

@@ -19,6 +19,7 @@ class Snake_Part():
             return
         direction = DIRECTION_DICT[self.direction]
         self.shape.position = (self.shape.position[0] + direction[0] * PART_SIZE, self.shape.position[1] + direction[1] * PART_SIZE)
+        self.shape.rect.x, self.shape.rect.y = self.shape.position
 
 class Snake:
     def __init__(self, surface: pygame.Surface, id: tuple[int, int], food_id: tuple[int, int] = INIT_FOOD_ID,  noises: list[tuple[int, int]] = INIT_NOISES, is_player_2 = False) -> None:
@@ -45,16 +46,16 @@ class Snake:
         self.frame = 0
         self.is_eating = False
         self.eating_combo = 0
-        self.score = 0
+        self.length = INIT_SNAKE_PARTS_NUM
         self.generate_init_parts()
         self.algorithm = Algorithm(self.get_parts_id(), self.noises)
 
     def generate_init_parts(self) -> None:
         position = self.head_position
-        for part_id in range((INIT_SNAKE_PARTS_NUM - 2) * 3 + 4):
+        for part_id in range((self.length - 2) * 3 + 4):
             if part_id == 0:
                 part_type = 'head'
-            elif part_id == ((INIT_SNAKE_PARTS_NUM - 2) * 3 + 3):
+            elif part_id == ((self.length - 2) * 3 + 3):
                 part_type = 'tail'
             else:
                 part_type = 'body'
@@ -129,7 +130,7 @@ class Snake:
         if self.head_position == food_position:
             self.is_eating = True
             self.eating_combo += 1
-            self.score += 1
+            self.length += 1
             return True
         return False
 

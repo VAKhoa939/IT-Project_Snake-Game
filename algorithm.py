@@ -57,8 +57,6 @@ class Algorithm:
         if self.name != 'DFS':
             frontier_id: list[tuple[int, int]] = [frontier_node.id for frontier_node in self.frontier]
             invalid_id += frontier_id
-#        frontier_id: list[tuple[int, int]] = [frontier_node.id for frontier_node in self.frontier]
-#        invalid_id += frontier_id
 
         i = 0
         neighbors_num = len(neighbors)
